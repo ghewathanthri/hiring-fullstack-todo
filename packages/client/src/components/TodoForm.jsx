@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TITLE_MAX, DESCRIPTION_MAX } from '../constants/todoLimits';
+import FieldFeedback from './FieldFeedback';
 
 export default function TodoForm({ onSubmit }) {
   const { t } = useTranslation();
@@ -10,6 +11,8 @@ export default function TodoForm({ onSubmit }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const titleAtLimit = title.length >= TITLE_MAX;
+  const descriptionAtLimit = description.length >= DESCRIPTION_MAX;
 
   const validate = () => {
     const newErrors = {};
@@ -65,14 +68,18 @@ export default function TodoForm({ onSubmit }) {
               }}
               onFocus={() => setIsExpanded(true)}
               placeholder={t('form.titlePlaceholder')}
-              className={`form-input ${errors.title ? 'input-error' : ''}`}
+              maxLength={TITLE_MAX}
+              className={`form-input ${errors.title || titleAtLimit ? 'input-error' : ''}`}
               disabled={submitting}
               autoComplete="off"
             />
           </div>
-          {errors.title && (
-            <span className="error-message">{errors.title}</span>
-          )}
+          <FieldFeedback
+            error={errors.title}
+            length={title.length}
+            max={TITLE_MAX}
+            limitMessage={t('validation.titleMax', { max: TITLE_MAX })}
+          />
         </div>
 
         <div className={`description-area ${isExpanded ? 'expanded' : ''}`}>
@@ -86,13 +93,17 @@ export default function TodoForm({ onSubmit }) {
                   setErrors((prev) => ({ ...prev, description: '' }));
               }}
               placeholder={t('form.descriptionPlaceholder')}
-              className={`form-textarea ${errors.description ? 'input-error' : ''}`}
+              maxLength={DESCRIPTION_MAX}
+              className={`form-textarea ${errors.description || descriptionAtLimit ? 'input-error' : ''}`}
               rows={3}
               disabled={submitting}
             />
-            {errors.description && (
-              <span className="error-message">{errors.description}</span>
-            )}
+            <FieldFeedback
+              error={errors.description}
+              length={description.length}
+              max={DESCRIPTION_MAX}
+              limitMessage={t('validation.descriptionMax', { max: DESCRIPTION_MAX })}
+            />
           </div>
         </div>
 

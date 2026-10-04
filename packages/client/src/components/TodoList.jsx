@@ -33,6 +33,8 @@ export default function TodoList({
 }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState('all');
+  // The selected todo shows its full title and description
+  const [selectedId, setSelectedId] = useState(null);
   const sensors = useSensors(
     // Small threshold so a plain click on the handle doesn't start a drag
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -90,11 +92,16 @@ export default function TodoList({
     onReorder(arrayMove(ids, ids.indexOf(active.id), ids.indexOf(over.id)));
   };
 
+  const toggleSelected = (id) =>
+    setSelectedId((current) => (current === id ? null : id));
+
   const renderItems = (items, Item = TodoItem) =>
     items.map((todo) => (
       <Item
         key={todo.id}
         todo={todo}
+        isSelected={todo.id === selectedId}
+        onSelect={toggleSelected}
         onToggleDone={onToggleDone}
         onUpdate={onUpdate}
         onDelete={onDelete}

@@ -276,7 +276,7 @@ body {
 }
 
 .description-area.expanded {
-  max-height: 200px;
+  max-height: 320px;
   opacity: 1;
 }
 
@@ -312,6 +312,27 @@ body {
   font-size: 0.8rem;
   color: var(--danger);
   padding-left: 4px;
+}
+
+/* Error on the left, character count in the right corner */
+.field-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.char-count {
+  margin-left: auto;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.char-count.at-limit {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 /* ============================================
@@ -628,6 +649,31 @@ body {
 .todo-content {
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+  outline: none;
+  border-radius: var(--radius-sm);
+}
+
+.todo-content:focus-visible {
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+/* Single line with ellipsis until the todo is selected */
+.todo-title,
+.todo-description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.todo-item.selected .todo-title,
+.todo-item.selected .todo-description {
+  white-space: pre-wrap;
+  overflow: visible;
+}
+
+.todo-item.selected:not(.editing) {
+  border-color: rgba(129, 140, 248, 0.3);
 }
 
 .todo-title {

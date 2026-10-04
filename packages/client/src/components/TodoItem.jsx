@@ -2,9 +2,12 @@ import { useRef, useState } from 'react';
 import { Check, GripVertical, Pencil, Trash2, X, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TITLE_MAX, DESCRIPTION_MAX } from '../constants/todoLimits';
+import FieldFeedback from './FieldFeedback';
 
 export default function TodoItem({
   todo,
+  isSelected = false,
+  onSelect,
   onToggleDone,
   onUpdate,
   onDelete,
@@ -21,12 +24,27 @@ export default function TodoItem({
     todo.description || ''
   );
   const [errors, setErrors] = useState({});
+  const titleAtLimit = editTitle.length >= TITLE_MAX;
+  const descriptionAtLimit = editDescription.length >= DESCRIPTION_MAX;
   const actionsRef = useRef(null);
 
   // Action buttons fade in on hover; ignore clicks until they are fully visible
   const areActionsVisible = () =>
     actionsRef.current &&
     parseFloat(getComputedStyle(actionsRef.current).opacity) >= 0.99;
+
+  const handleSelect = () => {
+    // Don't toggle while the user is selecting text to copy
+    if (window.getSelection()?.toString()) return;
+    onSelect?.(todo.id);
+  };
+
+  const handleContentKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect?.(todo.id);
+    }
+  };
 
   const handleEditClick = () => {
     if (areActionsVisible()) setIsEditing(true);
@@ -97,7 +115,7 @@ export default function TodoItem({
     <div
       ref={containerRef}
       style={containerStyle}
-      className={`todo-item ${todo.done ? 'done' : ''} ${isEditing ? 'editing' : ''} ${dragHandleProps ? 'sortable' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`todo-item ${todo.done ? 'done' : ''} ${isEditing ? 'editing' : ''} ${dragHandleProps ? 'sortable' : ''} ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`}
     >
       {isEditing ? (
         <div className="todo-edit">
@@ -110,13 +128,17 @@ export default function TodoItem({
                 if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
               }}
               onKeyDown={handleKeyDown}
-              className={`form-input edit-input ${errors.title ? 'input-error' : ''}`}
+              maxLength={TITLE_MAX}
+              className={`form-input edit-input ${errors.title || titleAtLimit ? 'input-error' : ''}`}
               placeholder={t('item.titlePlaceholder')}
               autoFocus
             />
-            {errors.title && (
-              <span className="error-message">{errors.title}</span>
-            )}
+            <FieldFeedback
+              error={errors.title}
+              length={editTitle.length}
+              max={TITLE_MAX}
+              limitMessage={t('validation.titleMax', { max: TITLE_MAX })}
+            />
           </div>
           <div className="form-group">
             <textarea
@@ -127,13 +149,17 @@ export default function TodoItem({
                   setErrors((prev) => ({ ...prev, description: '' }));
               }}
               onKeyDown={handleKeyDown}
-              className={`form-textarea edit-textarea ${errors.description ? 'input-error' : ''}`}
+              maxLength={DESCRIPTION_MAX}
+              className={`form-textarea edit-textarea ${errors.description || descriptionAtLimit ? 'input-error' : ''}`}
               placeholder={t('item.descriptionPlaceholder')}
               rows={2}
             />
-            {errors.description && (
-              <span className="error-message">{errors.description}</span>
-            )}
+            <FieldFeedback
+              error={errors.description}
+              length={editDescription.length}
+              max={DESCRIPTION_MAX}
+              limitMessage={t('validation.descriptionMax', { max: DESCRIPTION_MAX })}
+            />
           </div>
           <div className="edit-actions">
             <button
@@ -170,7 +196,14 @@ export default function TodoItem({
             </div>
           </div>
 
-          <div className="todo-content">
+          <div
+            className="todo-content"
+            role="button"
+            tabIndex={0}
+            aria-expanded={isSelected}
+            onClick={handleSelect}
+            onKeyDown={handleContentKeyDown}
+          >
             <h3 className={`todo-title ${todo.done ? 'completed' : ''}`}>
               {todo.title}
             </h3>
