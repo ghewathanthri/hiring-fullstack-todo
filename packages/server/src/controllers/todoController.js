@@ -83,6 +83,19 @@ const toggleDone = async (req, res, next) => {
 };
 
 /**
+ * @desc    Reorder TODOs
+ * @route   PUT /api/todos/reorder
+ */
+const reorderTodos = async (req, res, next) => {
+  try {
+    const todos = await todoStore.reorder(req.body.ids);
+    res.json({ success: true, data: todos });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Delete a TODO
  * @route   DELETE /api/todos/:id
  */
@@ -109,5 +122,6 @@ module.exports = {
   createTodo,
   updateTodo,
   toggleDone,
+  reorderTodos,
   deleteTodo,
 };

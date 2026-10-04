@@ -4,6 +4,11 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { translateServerError } from '../i18n/serverError';
 
+// Same order as the API: by position, newest first on ties
+const byPosition = (a, b) =>
+  (a.position ?? 0) - (b.position ?? 0) ||
+  new Date(b.createdAt) - new Date(a.createdAt);
+
 export function useTodos() {
   const { t } = useTranslation();
   const [todos, setTodos] = useState([]);
@@ -87,6 +92,29 @@ export function useTodos() {
     }
   };
 
+  // `ids` is the full list of active todo ids in their new order
+  const reorderTodos = async (ids) => {
+    // Optimistic update
+    const previousTodos = [...todos];
+    setTodos((prev) =>
+      prev
+        .map((todo) => {
+          const position = ids.indexOf(todo.id);
+          return position === -1 ? todo : { ...todo, position };
+        })
+        .sort(byPosition)
+    );
+
+    try {
+      await todoApi.reorder(ids);
+    } catch (err) {
+      // Rollback on error
+      setTodos(previousTodos);
+      const message = translateServerError(err, t, 'errors.reorder');
+      toast.error(message);
+    }
+  };
+
   const deleteTodo = async (id) => {
     // Optimistic update
     const previousTodos = [...todos];
@@ -110,6 +138,7 @@ export function useTodos() {
     addTodo,
     updateTodo,
     toggleDone,
+    reorderTodos,
     deleteTodo,
     refetch: fetchTodos,
   };

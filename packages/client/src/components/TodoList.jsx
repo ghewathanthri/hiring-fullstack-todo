@@ -1,7 +1,25 @@
 import { useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import TodoItem from './TodoItem';
+import SortableTodoItem from './SortableTodoItem';
 import { ClipboardList, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+// Keep dragged items on the vertical axis
+const restrictToVerticalAxis = ({ transform }) => ({ ...transform, x: 0 });
 
 export default function TodoList({
   todos,
@@ -10,10 +28,16 @@ export default function TodoList({
   onToggleDone,
   onUpdate,
   onDelete,
+  onReorder,
   onRetry,
 }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState('all');
+  const sensors = useSensors(
+    // Small threshold so a plain click on the handle doesn't start a drag
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   if (loading) {
     return (
@@ -60,9 +84,15 @@ export default function TodoList({
     (showActive ? activeTodos.length : 0) +
     (showCompleted ? completedTodos.length : 0);
 
-  const renderItems = (items) =>
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const ids = activeTodos.map((todo) => todo.id);
+    onReorder(arrayMove(ids, ids.indexOf(active.id), ids.indexOf(over.id)));
+  };
+
+  const renderItems = (items, Item = TodoItem) =>
     items.map((todo) => (
-      <TodoItem
+      <Item
         key={todo.id}
         todo={todo}
         onToggleDone={onToggleDone}
@@ -112,7 +142,21 @@ export default function TodoList({
       )}
 
       {showActive && activeTodos.length > 0 && (
-        <div className="todo-section">{renderItems(activeTodos)}</div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={activeTodos.map((todo) => todo.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="todo-section">
+              {renderItems(activeTodos, SortableTodoItem)}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {showCompleted && completedTodos.length > 0 && (

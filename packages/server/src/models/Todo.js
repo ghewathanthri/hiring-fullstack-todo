@@ -22,6 +22,11 @@ const todoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Display order; lower comes first
+    position: {
+      type: Number,
+      index: true,
+    },
   },
   {
     timestamps: true,

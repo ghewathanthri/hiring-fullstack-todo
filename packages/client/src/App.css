@@ -546,6 +546,55 @@ body {
   box-shadow: var(--shadow-glow);
 }
 
+/* Drag to reorder */
+.todo-item.sortable {
+  /* Leave transform to dnd-kit so dragging isn't delayed */
+  transition: background var(--transition), border-color var(--transition),
+    box-shadow var(--transition), opacity var(--transition);
+}
+
+.todo-item.dragging {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-card-hover);
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-md);
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 26px;
+  margin: 0 -6px 0 -8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.6;
+  transition: opacity var(--transition), color var(--transition);
+}
+
+.drag-handle:hover,
+.drag-handle:focus-visible {
+  opacity: 1;
+  color: var(--text-secondary);
+  outline: none;
+}
+
+.drag-handle:focus-visible {
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+.todo-item.dragging .drag-handle {
+  cursor: grabbing;
+}
+
 /* Checkbox */
 .todo-checkbox-area {
   padding-top: 2px;

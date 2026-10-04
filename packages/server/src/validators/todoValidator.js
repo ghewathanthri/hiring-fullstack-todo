@@ -36,14 +36,36 @@ const idRules = () =>
     message: 'Invalid TODO ID',
   });
 
+const reorderRules = () => [
+  body('ids')
+    .isArray({ min: 1 })
+    .withMessage({
+      code: ERROR_CODES.INVALID_ORDER,
+      message: 'ids must be a non-empty array',
+    })
+    .bail()
+    .custom((ids) => new Set(ids).size === ids.length)
+    .withMessage({
+      code: ERROR_CODES.INVALID_ORDER,
+      message: 'ids must not contain duplicates',
+    }),
+  body('ids.*').isMongoId().withMessage({
+    code: ERROR_CODES.INVALID_ID,
+    message: 'Invalid TODO ID',
+  }),
+];
+
 const validateCreateTodo = [titleRules(), descriptionRules()];
 
 const validateUpdateTodo = [idRules(), titleRules(), descriptionRules()];
 
 const validateTodoId = [idRules()];
 
+const validateReorderTodos = reorderRules();
+
 module.exports = {
   validateCreateTodo,
   validateUpdateTodo,
   validateTodoId,
+  validateReorderTodos,
 };

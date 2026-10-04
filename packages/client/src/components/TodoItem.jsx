@@ -1,9 +1,19 @@
 import { useRef, useState } from 'react';
-import { Check, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Check, GripVertical, Pencil, Trash2, X, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TITLE_MAX, DESCRIPTION_MAX } from '../constants/todoLimits';
 
-export default function TodoItem({ todo, onToggleDone, onUpdate, onDelete }) {
+export default function TodoItem({
+  todo,
+  onToggleDone,
+  onUpdate,
+  onDelete,
+  // Set by SortableTodoItem when the item can be reordered
+  containerRef,
+  containerStyle,
+  dragHandleProps,
+  isDragging = false,
+}) {
   const { t, i18n } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(todo.title);
@@ -84,7 +94,11 @@ export default function TodoItem({ todo, onToggleDone, onUpdate, onDelete }) {
   };
 
   return (
-    <div className={`todo-item ${todo.done ? 'done' : ''} ${isEditing ? 'editing' : ''}`}>
+    <div
+      ref={containerRef}
+      style={containerStyle}
+      className={`todo-item ${todo.done ? 'done' : ''} ${isEditing ? 'editing' : ''} ${dragHandleProps ? 'sortable' : ''} ${isDragging ? 'dragging' : ''}`}
+    >
       {isEditing ? (
         <div className="todo-edit">
           <div className="form-group">
@@ -138,6 +152,18 @@ export default function TodoItem({ todo, onToggleDone, onUpdate, onDelete }) {
         </div>
       ) : (
         <>
+          {dragHandleProps && (
+            <button
+              type="button"
+              className="drag-handle"
+              title={t('item.reorder')}
+              aria-label={t('item.reorderAria')}
+              {...dragHandleProps}
+            >
+              <GripVertical size={16} />
+            </button>
+          )}
+
           <div className="todo-checkbox-area" onClick={() => onToggleDone(todo.id)}>
             <div className={`todo-checkbox ${todo.done ? 'checked' : ''}`}>
               {todo.done && <Check size={14} strokeWidth={3} />}

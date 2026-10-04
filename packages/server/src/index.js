@@ -9,6 +9,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const todoRoutes = require('./routes/todoRoutes');
+const todoStore = require('./services/todoStore');
 const errorHandler = require('./middleware/errorHandler');
 const ERROR_CODES = require('./constants/errorCodes');
 
@@ -41,6 +42,7 @@ app.use(errorHandler);
 
 // Start accepting requests only once MongoDB is connected
 connectDB()
+  .then(() => todoStore.backfillPositions())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);

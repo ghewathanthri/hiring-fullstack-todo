@@ -8,8 +8,17 @@ import './App.css';
 
 function App() {
   const { t } = useTranslation();
-  const { todos, loading, error, addTodo, updateTodo, toggleDone, deleteTodo, refetch } =
-    useTodos();
+  const {
+    todos,
+    loading,
+    error,
+    addTodo,
+    updateTodo,
+    toggleDone,
+    reorderTodos,
+    deleteTodo,
+    refetch,
+  } = useTodos();
 
   return (
     <>
@@ -58,6 +67,7 @@ function App() {
               onToggleDone={toggleDone}
               onUpdate={updateTodo}
               onDelete={deleteTodo}
+              onReorder={reorderTodos}
               onRetry={refetch}
             />
           </main>
