@@ -4,201 +4,173 @@ A simple full-stack TODO application built as a technical assessment.
 
 The application allows users to create, view, edit, complete, and delete TODO items. The frontend communicates with a RESTful backend API, and TODO data is persisted in MongoDB.
 
-## Tech Stack
-
-### Frontend
-
-* React.js
-* JavaScript
-* HTML5 / CSS3
-
-### Backend
-
-* Node.js
-* Express.js
-
-### Database
-
-* MongoDB
-* Mongoose
-
 ## Features
 
-* View all TODO items
-* Create a new TODO
-* Edit an existing TODO
-* Mark a TODO as completed or incomplete
-* Delete a TODO
-* Optional TODO description
-* Form validation
-* Loading states
-* Error handling
-* Empty state handling
-* Responsive and simple user interface
+- **View TODOs** — Display all tasks in a clean, modern UI
+- **Create TODOs** — Add new tasks with title and optional description
+- **Edit TODOs** — Inline editing of title and description
+- **Mark as Done** — Toggle completion with visual feedback (strikethrough)
+- **Delete TODOs** — Remove tasks with optimistic UI updates
+- **Toast Notifications** — User-friendly success and error messages
+- **Optimistic UI** — Instant feedback with automatic rollback on errors
+- **Responsive** — Works on desktop and mobile
+- **Animations** — Smooth transitions and micro-interactions
+
+## Tech Stack
+
+| Layer      | Technology              |
+|------------|-------------------------|
+| Frontend   | React 19, Vite 8        |
+| Backend    | Node.js, Express 4      |
+| Database   | MongoDB, Mongoose 8     |
+| Validation | express-validator       |
+| HTTP       | Axios                   |
+| Monorepo   | npm workspaces          |
 
 ## Project Structure
 
-```text
-todo-app/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
-├── server/                 # Express backend
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── .env
-│   └── package.json
-│
-├── README.md
-└── package.json
+```
+hiring-fullstack-todo/
+├── packages/
+│   ├── client/              # React frontend (Vite)
+│   │   ├── src/
+│   │   │   ├── components/  # React components
+│   │   │   ├── hooks/       # Custom hooks
+│   │   │   ├── services/    # API service layer
+│   │   │   ├── App.jsx      # Root component
+│   │   │   └── App.css      # Styles
+│   │   └── package.json
+│   └── server/              # Express.js backend
+│       ├── src/
+│       │   ├── config/      # Database configuration
+│       │   ├── controllers/ # Route handlers
+│       │   ├── middleware/  # Error & validation middleware
+│       │   ├── models/      # Mongoose models
+│       │   ├── routes/      # Express routes
+│       │   ├── validators/  # Request validators
+│       │   └── index.js     # Server entry point
+│       └── package.json
+├── package.json             # Root workspace config
+└── README.md
 ```
 
 ## Prerequisites
 
 Make sure the following are installed:
+- **Node.js** `^20.19.0` or `>= 22.12.0` (required by Vite 8)
+- **MongoDB** — local, Docker or Atlas (see [server README](packages/server/README.md#mongodb-connection)). Required: the server exits if it can't connect.
+- **npm** >= 7 (for workspaces support)
 
-* Node.js 20+
-* npm
-* MongoDB
-
-You can use either a local MongoDB instance or MongoDB Atlas.
-
-## Installation
+## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
 git clone <repository-url>
-cd todo-app
+cd hiring-fullstack-todo
 ```
 
 ### 2. Install dependencies
-
-Install root dependencies:
 
 ```bash
 npm install
 ```
 
-Install frontend dependencies:
+This installs dependencies for both `packages/client` and `packages/server` via npm workspaces.
+
+### 3. Configure environment
+
+No setup needed for local development: `packages/server/.env` and `packages/client/.env` are committed with working defaults (MongoDB at `mongodb://localhost:27017/todo-app`, API on port 5000).
+
+To change a value, create a `.env.local` next to the `.env` and override it there. `.env.local` is git-ignored and takes precedence, so use it for secrets such as an Atlas connection string.
+
+### 4. Start MongoDB
+
+Make sure MongoDB is running locally:
 
 ```bash
-npm install --prefix client
+# If using brew
+brew services start mongodb-community
+
+# Or use mongod directly
+mongod --dbpath /path/to/data
 ```
 
-Install backend dependencies:
+### 5. Run the application
 
 ```bash
-npm install --prefix server
-```
-
-## Environment Configuration
-
-Create a `.env` file inside the `server` directory:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/todo_app
-CLIENT_URL=http://localhost:5173
-```
-
-Update `MONGODB_URI` if you are using MongoDB Atlas or another MongoDB instance.
-
-## Running the Application
-
-Start both frontend and backend in development mode:
-
-```bash
+# Start both frontend and backend concurrently
 npm run dev
 ```
 
-The application will be available at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000/api
 
-```text
-Frontend:
-http://localhost:5173
+You can also run them individually:
 
-Backend:
-http://localhost:5000
+```bash
+npm run dev:server   # Backend only
+npm run dev:client   # Frontend only
 ```
 
-## API Endpoints
+## API Reference
 
-Base URL:
+| Method   | Endpoint              | Description              | Request Body                        |
+|----------|-----------------------|--------------------------|-------------------------------------|
+| `GET`    | `/api/todos`          | Get all TODOs            | —                                   |
+| `POST`   | `/api/todos`          | Create a new TODO        | `{ title, description? }`          |
+| `PUT`    | `/api/todos/:id`      | Update title/description | `{ title, description? }`          |
+| `PATCH`  | `/api/todos/:id/done` | Toggle done status       | —                                   |
+| `DELETE` | `/api/todos/:id`      | Delete a TODO            | —                                   |
+| `GET`    | `/api/health`         | Health check             | —                                   |
 
-```text
-/api/todos
-```
+### Response Format
 
-| Method | Endpoint              | Description            |
-| ------ | --------------------- | ---------------------- |
-| GET    | `/api/todos`          | Get all TODOs          |
-| POST   | `/api/todos`          | Create a TODO          |
-| PUT    | `/api/todos/:id`      | Update a TODO          |
-| PATCH  | `/api/todos/:id/done` | Toggle TODO completion |
-| DELETE | `/api/todos/:id`      | Delete a TODO          |
-
-### Create TODO
-
-```http
-POST /api/todos
-Content-Type: application/json
-```
-
-Request:
+All responses follow a consistent format:
 
 ```json
 {
-  "title": "Complete assessment",
-  "description": "Finish the TODO application"
+  "success": true,
+  "data": {
+    "id": "...",
+    "title": "Buy groceries",
+    "description": "Milk, eggs, bread",
+    "done": false,
+    "createdAt": "2026-10-03T17:00:00.000Z",
+    "updatedAt": "2026-10-03T17:00:00.000Z"
+  }
 }
 ```
 
-### Update TODO
+### Error Response
 
-```http
-PUT /api/todos/:id
-Content-Type: application/json
-```
-
-Request:
+Errors carry a stable `code` that the client translates; `message` is an English fallback for logs and tools like curl. Validation failures also list per-field errors:
 
 ```json
 {
-  "title": "Complete React assessment",
-  "description": "Finish frontend and backend implementation"
+  "success": false,
+  "code": "VALIDATION_FAILED",
+  "message": "Title cannot exceed 200 characters",
+  "errors": [
+    { "field": "title", "code": "TITLE_TOO_LONG", "params": { "max": 200 }, "message": "Title cannot exceed 200 characters" }
+  ]
 }
 ```
 
-### Toggle TODO
+See the [server README](packages/server/README.md#error-codes) for the full list of codes.
 
-```http
-PATCH /api/todos/:id/done
-```
+## Database Model
 
-The endpoint toggles the TODO between completed and incomplete.
+The database is a MongoDB collection named `todos` with the following structure:
 
-## Data Model
-
-A TODO item has the following structure:
-
-```json
+```javascript
 {
-  "_id": "string",
-  "title": "string",
-  "description": "string",
-  "done": false,
-  "createdAt": "timestamp",
-  "updatedAt": "timestamp"
+  _id: ObjectId,           // Auto-generated
+  title: String,           // Required, max 200 chars
+  description: String,     // Optional, max 1000 chars
+  done: Boolean,           // Default: false
+  createdAt: Date,         // Auto-generated
+  updatedAt: Date          // Auto-updated
 }
 ```
 
@@ -227,40 +199,6 @@ The application handles common error scenarios including:
 * Network errors
 
 User-friendly error messages are displayed where appropriate.
-
-## Development
-
-The project is organized into separate frontend and backend applications.
-
-The frontend is responsible for:
-
-* UI rendering
-* User interaction
-* Form handling
-* API communication
-* Loading and error states
-
-The backend is responsible for:
-
-* REST API endpoints
-* Request validation
-* Database operations
-* Error handling
-
-MongoDB is responsible for persistent TODO storage.
-
-## Future Improvements
-
-Possible improvements if the application is extended:
-
-* Automated tests
-* Pagination
-* Search and filtering
-* TODO categories
-* Due dates
-* User authentication
-* Docker support
-* CI/CD pipeline
 
 ## License
 
