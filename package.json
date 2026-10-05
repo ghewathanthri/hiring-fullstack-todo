@@ -1,0 +1,20 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A full-stack TODO application with React, Express, and MongoDB",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w packages/server\" \"npm run dev -w packages/client\"",
+    "dev:server": "npm run dev -w packages/server",
+    "dev:client": "npm run dev -w packages/client",
+    "build": "npm run build -w packages/client",
+    "start": "npm run start -w packages/server",
+    "lint": "npm run lint -w packages/client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

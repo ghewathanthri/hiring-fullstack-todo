@@ -1,0 +1,179 @@
+import { useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import TodoItem from './TodoItem';
+import SortableTodoItem from './SortableTodoItem';
+import { ClipboardList, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+// Keep dragged items on the vertical axis
+const restrictToVerticalAxis = ({ transform }) => ({ ...transform, x: 0 });
+
+export default function TodoList({
+  todos,
+  loading,
+  error,
+  onToggleDone,
+  onUpdate,
+  onDelete,
+  onReorder,
+  onRetry,
+}) {
+  const { t } = useTranslation();
+  const [filter, setFilter] = useState('all');
+  // The selected todo shows its full title and description
+  const [selectedId, setSelectedId] = useState(null);
+  const sensors = useSensors(
+    // Small threshold so a plain click on the handle doesn't start a drag
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  if (loading) {
+    return (
+      <div className="state-container">
+        <Loader2 className="spinner" size={40} />
+        <p className="state-text">{t('list.loading')}</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="state-container error-state">
+        <AlertTriangle size={40} className="state-icon error-icon" />
+        <p className="state-text">{error}</p>
+        <button className="btn btn-retry" onClick={onRetry}>
+          <RefreshCw size={16} />
+          {t('list.retry')}
+        </button>
+      </div>
+    );
+  }
+
+  if (todos.length === 0) {
+    return (
+      <div className="state-container empty-state">
+        <ClipboardList size={48} className="state-icon empty-icon" />
+        <h3 className="state-title">{t('list.emptyTitle')}</h3>
+        <p className="state-text">{t('list.emptyText')}</p>
+      </div>
+    );
+  }
+
+  const activeTodos = todos.filter((t) => !t.done);
+  const completedTodos = todos.filter((t) => t.done);
+
+  // Clicking the selected badge again returns to the full list
+  const toggleFilter = (value) =>
+    setFilter((current) => (current === value ? 'all' : value));
+
+  const showActive = filter !== 'completed';
+  const showCompleted = filter !== 'active';
+  const visibleCount =
+    (showActive ? activeTodos.length : 0) +
+    (showCompleted ? completedTodos.length : 0);
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const ids = activeTodos.map((todo) => todo.id);
+    onReorder(arrayMove(ids, ids.indexOf(active.id), ids.indexOf(over.id)));
+  };
+
+  const toggleSelected = (id) =>
+    setSelectedId((current) => (current === id ? null : id));
+
+  const renderItems = (items, Item = TodoItem) =>
+    items.map((todo) => (
+      <Item
+        key={todo.id}
+        todo={todo}
+        isSelected={todo.id === selectedId}
+        onSelect={toggleSelected}
+        onToggleDone={onToggleDone}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+      />
+    ));
+
+  return (
+    <div className="todo-list">
+      <nav className="list-stats" aria-label={t('list.filterAria')}>
+        <div className="stat-filters">
+          <button
+            type="button"
+            className={`stat-badge ${filter === 'active' ? 'selected' : ''}`}
+            onClick={() => toggleFilter('active')}
+            aria-pressed={filter === 'active'}
+          >
+            {t('list.active')}
+            <span className="stat-count">{activeTodos.length}</span>
+          </button>
+          <button
+            type="button"
+            className={`stat-badge ${filter === 'completed' ? 'selected' : ''}`}
+            onClick={() => toggleFilter('completed')}
+            aria-pressed={filter === 'completed'}
+          >
+            {t('list.completed')}
+            <span className="stat-count">{completedTodos.length}</span>
+          </button>
+        </div>
+        <button
+          type="button"
+          className={`stat-badge stat-total ${filter === 'all' ? 'selected' : ''}`}
+          onClick={() => setFilter('all')}
+          aria-pressed={filter === 'all'}
+        >
+          {t('list.total')}
+          <span className="stat-count">{todos.length}</span>
+        </button>
+      </nav>
+
+      {visibleCount === 0 && (
+        <p className="state-text filter-empty">
+          {filter === 'active' ? t('list.emptyActive') : t('list.emptyCompleted')}
+        </p>
+      )}
+
+      {showActive && activeTodos.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={activeTodos.map((todo) => todo.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="todo-section">
+              {renderItems(activeTodos, SortableTodoItem)}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {showCompleted && completedTodos.length > 0 && (
+        <div className="todo-section">
+          {filter === 'all' && (
+            <h3 className="section-label">{t('list.completedSection')}</h3>
+          )}
+          {renderItems(completedTodos)}
+        </div>
+      )}
+    </div>
+  );
+}

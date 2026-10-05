@@ -1,0 +1,69 @@
+{
+  "app": {
+    "title": "TaskFlow",
+    "subtitle": "Organize your day, one task at a time",
+    "footer": "© 2026 ghewathanthri. All rights reserved."
+  },
+  "form": {
+    "heading": "Add New Task",
+    "titlePlaceholder": "What needs to be done?",
+    "descriptionPlaceholder": "Add a description (optional)",
+    "submit": "Add Task",
+    "submitting": "Adding..."
+  },
+  "item": {
+    "titlePlaceholder": "Task title",
+    "descriptionPlaceholder": "Description (optional)",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "editAria": "Edit todo",
+    "delete": "Delete",
+    "deleteAria": "Delete todo",
+    "reorder": "Drag to reorder",
+    "reorderAria": "Reorder todo"
+  },
+  "list": {
+    "loading": "Loading your tasks...",
+    "retry": "Try Again",
+    "emptyTitle": "No tasks yet",
+    "emptyText": "Add your first task above to get started!",
+    "active": "Active",
+    "completed": "Completed",
+    "total": "Total",
+    "filterAria": "Filter tasks",
+    "emptyActive": "No active tasks. Nice work!",
+    "emptyCompleted": "No completed tasks yet",
+    "completedSection": "Completed"
+  },
+  "validation": {
+    "titleRequired": "Title is required",
+    "titleMax": "Title cannot exceed {{max}} characters",
+    "descriptionMax": "Description cannot exceed {{max}} characters"
+  },
+  "toast": {
+    "created": "TODO created!",
+    "updated": "TODO updated!",
+    "deleted": "TODO deleted!"
+  },
+  "errors": {
+    "load": "Failed to load TODOs",
+    "create": "Failed to create TODO",
+    "update": "Failed to update TODO",
+    "toggle": "Failed to toggle TODO status",
+    "reorder": "Failed to reorder TODOs",
+    "delete": "Failed to delete TODO"
+  },
+  "serverErrors": {
+    "VALIDATION_FAILED": "Please check your input",
+    "TITLE_REQUIRED": "Title is required",
+    "TITLE_TOO_LONG": "Title cannot exceed {{max}} characters",
+    "DESCRIPTION_TOO_LONG": "Description cannot exceed {{max}} characters",
+    "INVALID_ID": "Invalid task ID",
+    "INVALID_ORDER": "The new task order is invalid",
+    "INVALID_JSON": "The request could not be read",
+    "TODO_NOT_FOUND": "This task no longer exists",
+    "ROUTE_NOT_FOUND": "The requested resource was not found",
+    "INTERNAL_ERROR": "Something went wrong. Please try again."
+  }
+}
